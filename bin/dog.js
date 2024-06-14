@@ -59,11 +59,12 @@ client.on('message', async msg => {
     }
     else {
         let formattedMessage = ''
+        let displayname = msg._data.notifyName || ''
         if (chat.isGroup) {
-            formattedMessage = `${msg.from}:${msg._data.notifyName}:${chat.id}:${chat.name}:${msg.body}\n`;
+            formattedMessage = `${msg.from}:${displayname}:${chat.id}:${chat.name}:${msg.body}\n`;
         }
         else {
-            formattedMessage = `${msg.from}:${msg._data.notifyName}:::${msg.body}\n`;
+            formattedMessage = `${msg.from}:${displayname}:::${msg.body}\n`;
         }
 //        console.log(formattedMessage)
         fs.appendFile(incomingFilePath, formattedMessage, (err) => {

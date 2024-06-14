@@ -7,6 +7,7 @@ from gdo.base.Logger import Logger
 from gdo.base.Message import Message
 from gdo.base.Render import Mode
 from gdo.core.Connector import Connector
+from gdo.core.GDO_Server import GDO_Server
 from gdo.core.GDO_Session import GDO_Session
 from gdo.whatsapp.module_whatsapp import module_whatsapp
 
@@ -15,6 +16,14 @@ class WhatsApp(Connector):
     """
     This connector reads lines from bin/wapp.in.fifo and executes them accordingly
     """
+
+    @classmethod
+    def instance(cls) -> "WhatsApp":
+        return cls.get_server().get_connector()
+
+    @classmethod
+    def get_server(cls) -> GDO_Server:
+        return GDO_Server.get_by_connector('WhatsApp')
 
     def get_render_mode(self) -> Mode:
         return Mode.MARKDOWN
@@ -45,7 +54,8 @@ class WhatsApp(Connector):
     async def process_line(self, line):
         try:
             Logger.debug(f"WAPP << {line}")
-            user_name, user_displayname, channel_name, channel_displayname, text = line.split(':', 5)
+            user_name, user_displayname, channel_name, channel_displayname, text = line.split(':', 4)
+            Logger.debug(f"WAPP << {text}")
             Application.mode(Mode.MARKDOWN)
             Application.fresh_page()
             message = Message(text, Mode.MARKDOWN)
@@ -69,14 +79,17 @@ class WhatsApp(Connector):
         except Exception as e:
             print(f"Error processing line: {line} - {e}")
 
+    async def send_to_number(self, number: str, line: str):
+        try:
+            async with aiofiles.open(self.get_path('out'), mode='w') as file:
+                await file.write(f"{number}::{line}\n")
+        except Exception as e:
+            print(f"Error writing to file: {e}")
+
     async def gdo_send_to_user(self, msg: Message):
         Logger.debug(f"WAPP >> {msg._result}")
         user = msg._env_user
-        try:
-            async with aiofiles.open(self.get_path('out'), mode='w') as file:
-                await file.write(f"{user.get_name()}::{msg._result}\n")
-        except Exception as e:
-            print(f"Error writing to file: {e}")
+        await self.send_to_number(user.get_name(), msg._result)
 
     async def gdo_send_to_channel(self, msg: Message):
         Logger.debug(f"WAPP >> {msg._result}")
@@ -86,4 +99,3 @@ class WhatsApp(Connector):
                 await file.write(f":{channel.get_name()}:{msg._result}\n")
         except Exception as e:
             print(f"Error writing to file: {e}")
-

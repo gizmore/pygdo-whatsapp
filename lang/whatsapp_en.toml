@@ -1,2 +1,9 @@
 module_whatsapp = "WhatsApp"
 
+##########
+# Invite #
+##########
+mt_whatsapp_invite = "Invite (WhatsApp user)"
+md_whatsapp_invite = "Invite a user to whatsapp."
+whatsapp_invite_text = "Hi, I am Chappy, gizmore's new chatbot. You can try `$help` or maybe `$set language de` to get started. If you don't like me just ignore this message."
+msg_user_invited = "I have sent an invitation to this number."
