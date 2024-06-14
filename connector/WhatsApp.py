@@ -16,27 +16,35 @@ class WhatsApp(Connector):
     This connector reads lines from bin/wapp.in.fifo and executes them accordingly
     """
 
+    def get_render_mode(self) -> Mode:
+        return Mode.MARKDOWN
+
     def get_path(self, in_or_out: str):
         mod = module_whatsapp.instance()
         return mod.file_path(f'bin/wapp.{in_or_out}')
 
-    async def gdo_connect(self):
-        await self.read_lines()
+    def gdo_connect(self):
+        Logger.debug("Connecting WhatsApp")
+        self._connected = True
+        asyncio.create_task(self.run())
 
-    async def read_lines(self):
-        file_path = self.get_path('in')
-        while True:
-            try:
-                async with aiofiles.open(file_path, mode='r') as file:
-                    async for line in file:
-                        await self.process_line(line.strip())
-                await asyncio.sleep(0.33)
-            except Exception as e:
-                print(f"Error reading from file: {e}")
-                await asyncio.sleep(1)
+    async def run(self):
+        try:
+            fifo_in = self.get_path('in')
+            with open(fifo_in, 'r') as fifo:
+                while True:
+                    # Read a line from FIFO (blocking)
+                    line = fifo.readline().strip()
+                    if line:
+                        await self.process_line(line)
+                    else:
+                        await asyncio.sleep(0.1)  # Sleep briefly if no data
+        except Exception as e:
+            print(f"Error reading from FIFO: {e}")
 
     async def process_line(self, line):
         try:
+            Logger.debug(f"WAPP << {line}")
             user_name, user_displayname, channel_name, channel_displayname, text = line.split(':', 5)
             Application.mode(Mode.MARKDOWN)
             Application.fresh_page()
@@ -49,30 +57,32 @@ class WhatsApp(Connector):
                 trigger = channel.get_trigger()
             message.env_user(user).env_channel(channel).env_server(self._server).env_session(GDO_Session.for_user(user))
             Application.EVENTS.publish('new_message', message)
-            if line.startswith(trigger):
-                message._message = line[1:]
+            if text.startswith(trigger):
+                message._message = text[1:]
                 try:
-                    asyncio.run(message.execute())
+                    await message.execute()
                 except Exception as ex:
                     Logger.exception(ex)
                     message._result = Application.get_page()._top_bar.render_irc()
                     message._result += str(ex)
-                    asyncio.run(message.deliver())
-        except ValueError as e:
+                    await message.deliver()
+        except Exception as e:
             print(f"Error processing line: {line} - {e}")
 
     async def gdo_send_to_user(self, msg: Message):
+        Logger.debug(f"WAPP >> {msg._result}")
         user = msg._env_user
         try:
-            async with aiofiles.open(self.get_path('out'), mode='a') as file:
+            async with aiofiles.open(self.get_path('out'), mode='w') as file:
                 await file.write(f"{user.get_name()}::{msg._result}\n")
         except Exception as e:
             print(f"Error writing to file: {e}")
 
     async def gdo_send_to_channel(self, msg: Message):
+        Logger.debug(f"WAPP >> {msg._result}")
         channel = msg._env_channel
         try:
-            async with aiofiles.open(self.get_path('out'), mode='a') as file:
+            async with aiofiles.open(self.get_path('out'), mode='w') as file:
                 await file.write(f":{channel.get_name()}:{msg._result}\n")
         except Exception as e:
             print(f"Error writing to file: {e}")
