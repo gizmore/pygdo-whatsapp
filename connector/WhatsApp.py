@@ -75,20 +75,22 @@ class WhatsApp(Connector):
                     await message.execute()
                 except Exception as ex:
                     Logger.exception(ex)
-                    message._result = Application.get_page()._top_bar.render_irc()
+                    message._result = Application.get_page()._top_bar.render_markdown()
                     message._result += str(ex)
                     await message.deliver()
         except KeyboardInterrupt as ex:
             raise ex
-        except Exception as e:
-            print(f"Error processing line: {line} - {e}")
+        except Exception as ex:
+            Logger.exception(ex)
+            print(f"Error processing line: {line}")
 
     async def send_to_number(self, number: str, line: str):
         try:
             async with aiofiles.open(self.get_path('out'), mode='w') as file:
                 await file.write(f"{number}::{line}\n")
-        except Exception as e:
-            print(f"Error writing to file: {e}")
+        except Exception as ex:
+            Logger.exception(ex)
+            print(f"Error writing to file: {ex}")
 
     async def gdo_send_to_user(self, msg: Message):
         Logger.debug(f"WAPP >> {msg._result}")
@@ -101,5 +103,6 @@ class WhatsApp(Connector):
         try:
             async with aiofiles.open(self.get_path('out'), mode='w') as file:
                 await file.write(f":{channel.get_name()}:{msg._result}\n")
-        except Exception as e:
-            print(f"Error writing to file: {e}")
+        except Exception as ex:
+            Logger.exception(ex)
+            print(f"Error writing to file: {ex}")
