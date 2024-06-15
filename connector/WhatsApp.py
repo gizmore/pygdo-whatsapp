@@ -47,7 +47,9 @@ class WhatsApp(Connector):
                     if line:
                         await self.process_line(line)
                     else:
-                        await asyncio.sleep(0.1)  # Sleep briefly if no data
+                        await asyncio.sleep(0.2)  # Sleep briefly if no data
+        except KeyboardInterrupt as ex:
+            raise ex
         except Exception as e:
             print(f"Error reading from FIFO: {e}")
 
@@ -76,6 +78,8 @@ class WhatsApp(Connector):
                     message._result = Application.get_page()._top_bar.render_irc()
                     message._result += str(ex)
                     await message.deliver()
+        except KeyboardInterrupt as ex:
+            raise ex
         except Exception as e:
             print(f"Error processing line: {line} - {e}")
 
