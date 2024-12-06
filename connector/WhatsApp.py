@@ -59,7 +59,6 @@ class WhatsApp(Connector):
             user_name, user_displayname, channel_name, channel_displayname, text = line.split(':', 4)
             Logger.debug(f"WAPP << {text}")
             Application.mode(Mode.MARKDOWN)
-            Application.fresh_page()
             message = Message(text, Mode.MARKDOWN)
             user = self._server.get_or_create_user(user_name, user_displayname)
             channel = None
