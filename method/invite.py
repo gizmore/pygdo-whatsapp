@@ -13,12 +13,12 @@ class invite(Method):
     def gdo_user_permission(self) -> str | None:
         return 'staff'
 
-    def gdo_parameters(self) -> [GDT]:
+    def gdo_parameters(self) -> list[GDT]:
         return [
             GDT_WAPhoneNumber('phone'),
         ]
 
-    def gdo_execute(self):
+    def gdo_execute(self) -> GDT:
         wapp = WhatsApp.instance()
         invite_text = t('whatsapp_invite_text')
         wapp.send_to_number(self.param_value('phone'), invite_text)
