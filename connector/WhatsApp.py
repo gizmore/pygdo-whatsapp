@@ -23,7 +23,7 @@ class WhatsApp(Connector):
 
     @classmethod
     def get_server(cls) -> GDO_Server:
-        return GDO_Server.get_by_connector('WhatsApp')
+        return GDO_Server.get_by_connector('whatsapp')
 
     def get_render_mode(self) -> Mode:
         return Mode.MARKDOWN
@@ -35,7 +35,7 @@ class WhatsApp(Connector):
     def gdo_connect(self):
         Logger.debug("Connecting WhatsApp")
         self._connected = True
-        asyncio.create_task(self.run())
+        asyncio.run(self.run())
 
     async def run(self):
         try:
