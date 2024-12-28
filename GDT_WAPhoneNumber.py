@@ -11,7 +11,7 @@ class GDT_WAPhoneNumber(GDT_String):
         self.minlen(8)
         self.ascii()
 
-    async def get_value(self):
+    def get_value(self):
         phone = self.get_val()
         if not phone.endswith(self.APPENDIX):
             phone += self.APPENDIX

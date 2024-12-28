@@ -8,7 +8,7 @@ from gdo.core.GDO_Server import GDO_Server
 
 class module_whatsapp(GDO_Module):
 
-    async def gdo_init(self):
+    def gdo_init(self):
         from gdo.whatsapp.connector.WhatsApp import WhatsApp
         Connector.register(WhatsApp)
 

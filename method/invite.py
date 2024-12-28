@@ -18,7 +18,7 @@ class invite(Method):
             GDT_WAPhoneNumber('phone'),
         ]
 
-    async def gdo_execute(self) -> GDT:
+    def gdo_execute(self) -> GDT:
         wapp = WhatsApp.instance()
         invite_text = t('whatsapp_invite_text')
         wapp.send_to_number(self.param_value('phone'), invite_text)
