@@ -61,7 +61,7 @@ class WhatsApp(Connector):
             Logger.debug(f"WAPP << {line}")
             user_name, user_displayname, channel_name, channel_displayname, text = line.split(':', 4)
             Logger.debug(f"WAPP << {text}")
-            Application.mode(Mode.MARKDOWN)
+            # Application.mode(Mode.MARKDOWN)
             message = Message(text, Mode.MARKDOWN)
             user = self._server.get_or_create_user(user_name, user_displayname)
             channel = None
@@ -69,7 +69,7 @@ class WhatsApp(Connector):
             if channel_name:
                 channel = self._server.get_or_create_channel(channel_name, channel_displayname)
                 trigger = channel.get_trigger()
-            message.env_user(user).env_channel(channel).env_server(self._server).env_session(GDO_Session.for_user(user))
+            message.env_user(user).env_channel(channel).env_server(self._server)
             Application.EVENTS.publish('new_message', message)
             if text.startswith(trigger):
                 message._message = text[1:]
