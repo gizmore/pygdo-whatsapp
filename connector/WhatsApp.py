@@ -32,17 +32,17 @@ class WhatsApp(Connector):
         mod = module_whatsapp.instance()
         return mod.file_path(f'bin/wapp.{in_or_out}')
 
-    def gdo_connect(self):
+    def gdo_connect(self) -> bool:
         Logger.debug("Connecting WhatsApp")
         self._connected = True
         asyncio.run(self.run())
+        return True
 
     async def run(self):
         try:
             fifo_in = self.get_path('in')
             with open(fifo_in, 'r') as fifo:
                 while True:
-                    # Read a line from FIFO (blocking)
                     line = fifo.readline().strip()
                     if line:
                         await self.process_line(line)
