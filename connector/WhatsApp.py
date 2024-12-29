@@ -28,6 +28,9 @@ class WhatsApp(Connector):
     def get_render_mode(self) -> Mode:
         return Mode.MARKDOWN
 
+    def gdo_needs_authentication(self) -> bool:
+        return False
+
     def get_path(self, in_or_out: str):
         mod = module_whatsapp.instance()
         return mod.file_path(f'bin/wapp.{in_or_out}')
