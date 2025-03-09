@@ -94,7 +94,7 @@ class WhatsApp(Connector):
             Logger.exception(ex)
             print(f"Error writing to file: {ex}")
 
-    async def gdo_send_to_user(self, msg: Message):
+    async def gdo_send_to_user(self, msg: Message, notice: bool=False):
         Logger.debug(f"WAPP >> {msg._result}")
         user = msg._env_user
         await self.send_to_number(user.get_name(), msg._result)
