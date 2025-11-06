@@ -35,7 +35,7 @@ class WhatsApp(Connector):
         mod = module_whatsapp.instance()
         return mod.file_path(f'bin/wapp.{in_or_out}')
 
-    def gdo_connect(self) -> bool:
+    async def gdo_connect(self) -> bool:
         Logger.debug("Connecting WhatsApp")
         self._connected = True
         asyncio.run(self.run())
