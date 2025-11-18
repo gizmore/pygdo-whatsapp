@@ -11,7 +11,7 @@ class module_whatsapp(GDO_Module):
         from gdo.whatsapp.connector.WhatsApp import WhatsApp
         Connector.register(WhatsApp)
 
-    def gdo_install(self):
+    async def gdo_install(self):
         if not GDO_Server.get_by_connector('whatsapp'):
             GDO_Server.blank({
                 'serv_name': 'WhatsApp',
