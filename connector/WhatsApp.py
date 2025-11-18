@@ -26,7 +26,7 @@ class WhatsApp(Connector):
         return GDO_Server.get_by_connector('whatsapp')
 
     def get_render_mode(self) -> Mode:
-        return Mode.markdown
+        return Mode.render_markdown
 
     def gdo_needs_authentication(self) -> bool:
         return False
@@ -62,7 +62,7 @@ class WhatsApp(Connector):
             user_name, user_displayname, channel_name, channel_displayname, text = line.split(':', 4)
             Logger.debug(f"WAPP << {text}")
             # Application.mode(Mode.markdown)
-            message = Message(text, Mode.markdown)
+            message = Message(text, Mode.render_markdown)
             user = self._server.get_or_create_user(user_name, user_displayname)
             channel = None
             trigger = self._server.get_trigger()
