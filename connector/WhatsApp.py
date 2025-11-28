@@ -70,7 +70,7 @@ class WhatsApp(Connector):
                 channel = self._server.get_or_create_channel(channel_name, channel_displayname)
                 trigger = channel.get_trigger()
             message.env_user(user, True).env_channel(channel).env_server(self._server)
-            Application.EVENTS.publish('new_message', message)
+            await Application.EVENTS.publish('new_message', message)
             if text.startswith(trigger):
                 message._message = text[1:]
                 try:
