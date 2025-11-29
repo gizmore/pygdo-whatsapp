@@ -63,7 +63,7 @@ class WhatsApp(Connector):
             Logger.debug(f"WAPP << {text}")
             # Application.mode(Mode.markdown)
             message = Message(text, Mode.render_markdown)
-            user = self._server.get_or_create_user(user_name, user_displayname)
+            user = await self._server.get_or_create_user(user_name, user_displayname)
             channel = None
             trigger = self._server.get_trigger()
             if channel_name:
