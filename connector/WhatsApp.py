@@ -38,7 +38,7 @@ class WhatsApp(Connector):
     async def gdo_connect(self) -> bool:
         Logger.debug("Connecting WhatsApp")
         self._connected = True
-        asyncio.run(self.run())
+        Application.TASKS.append(asyncio.create_task(self.run(), name='WApp'))
         return True
 
     async def run(self):
