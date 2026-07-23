@@ -44,9 +44,9 @@ class WhatsApp(Connector):
     async def run(self):
         try:
             fifo_in = self.get_path('in')
-            with open(fifo_in, 'r') as fifo:
+            async with aiofiles.open(fifo_in, 'r') as fifo:
                 while True:
-                    line = fifo.readline().strip()
+                    line = (await fifo.readline()).strip()
                     if line:
                         await self.process_line(line)
                     else:
