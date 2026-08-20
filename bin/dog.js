@@ -14,6 +14,10 @@ var outgoingFilePath = path.join(__dirname, 'wapp.out');
 // Create a new client instance
 const client = new Client({
     authStrategy: new LocalAuth(),
+    // Keep WhatsApp Web visible while the connector is paired and supervised.
+    puppeteer: {
+        headless: false,
+    },
     webVersionCache: {
         type: "remote",
         remotePath: "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html",
