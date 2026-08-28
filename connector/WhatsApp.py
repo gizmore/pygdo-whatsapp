@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import aiofiles
 
@@ -8,7 +9,6 @@ from gdo.base.Message import Message
 from gdo.base.Render import Mode
 from gdo.core.Connector import Connector
 from gdo.core.GDO_Server import GDO_Server
-from gdo.core.GDO_Session import GDO_Session
 from gdo.whatsapp.module_whatsapp import module_whatsapp
 
 
@@ -39,6 +39,8 @@ class WhatsApp(Connector):
         Logger.debug("Connecting WhatsApp")
         self._connected = True
         Application.TASKS.append(asyncio.create_task(self.run(), name='WApp'))
+        self._outgoing: asyncio.Queue[str] = asyncio.Queue()
+        Application.TASKS.append(asyncio.create_task(self.run_outgoing(), name='WAppOut'))
         return True
 
     async def run(self):
@@ -56,10 +58,29 @@ class WhatsApp(Connector):
         except Exception as e:
             print(f"Error reading from FIFO: {e}")
 
+    async def run_outgoing(self):
+        """Keep the FIFO writer open and reconnect it only after a pipe error."""
+        while True:
+            try:
+                async with aiofiles.open(self.get_path('out'), 'w') as fifo:
+                    while True:
+                        await fifo.write(await self._outgoing.get())
+                        await fifo.flush()
+            except asyncio.CancelledError:
+                raise
+            except Exception as ex:
+                Logger.exception(ex)
+                await asyncio.sleep(1)
+
     async def process_line(self, line):
         try:
             Logger.debug(f"WAPP << {line}")
-            user_name, user_displayname, channel_name, channel_displayname, text = line.split(':', 4)
+            payload = json.loads(line)
+            user_name = payload['user_id']
+            user_displayname = payload.get('displayname', '')
+            channel_name = payload.get('channel_id', '')
+            channel_displayname = payload.get('channel_name', '')
+            text = payload['message']
             Logger.debug(f"WAPP << {text}")
             # Application.mode(Mode.markdown)
             message = Message(text, Mode.render_markdown)
@@ -87,12 +108,7 @@ class WhatsApp(Connector):
             print(f"Error processing line: {line}")
 
     async def send_to_number(self, number: str, line: str):
-        try:
-            async with aiofiles.open(self.get_path('out'), mode='w') as file:
-                await file.write(f"{number}::{line}\n")
-        except Exception as ex:
-            Logger.exception(ex)
-            print(f"Error writing to file: {ex}")
+        await self._outgoing.put(json.dumps({'target': number, 'message': line}) + '\n')
 
     async def gdo_send_to_user(self, msg: Message, notice: bool=False):
         Logger.debug(f"WAPP >> {msg._result}")
@@ -102,9 +118,4 @@ class WhatsApp(Connector):
     async def gdo_send_to_channel(self, msg: Message):
         Logger.debug(f"WAPP >> {msg._result}")
         channel = msg._env_channel
-        try:
-            async with aiofiles.open(self.get_path('out'), mode='w') as file:
-                await file.write(f":{channel.get_name()}:{msg._result}\n")
-        except Exception as ex:
-            Logger.exception(ex)
-            print(f"Error writing to file: {ex}")
+        await self._outgoing.put(json.dumps({'target': channel.get_name(), 'message': msg._result}) + '\n')

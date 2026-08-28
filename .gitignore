@@ -6,3 +6,4 @@ yarn.lock
 bin/wapp.in
 bin/wapp.out
 .wwebjs_auth/
+.wwebjs_cache/

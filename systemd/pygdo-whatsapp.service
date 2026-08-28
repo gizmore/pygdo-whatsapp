@@ -1,0 +1,19 @@
+[Unit]
+Description=PyGDO WhatsApp Web bridge
+After=network-online.target graphical.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gizmore
+Group=gizmore
+WorkingDirectory=/home/gizmore/www/pygdo/gdo/whatsapp
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/gizmore/.Xauthority
+ExecStart=/home/gizmore/www/pygdo/gdo/whatsapp/bin/dog.sh
+Restart=always
+RestartSec=5
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target
