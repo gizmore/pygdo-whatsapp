@@ -90,6 +90,12 @@ class WhatsApp(Connector):
             if channel_name:
                 channel = self._server.get_or_create_channel(channel_name, channel_displayname)
                 trigger = channel.get_trigger()
+            # The FIFO protocol currently carries messages rather than
+            # separate membership events.  Treat each received message as a
+            # fresh server/channel presence observation.
+            await self._server.on_user_joined(user, channel)
+            if channel:
+                await channel.on_user_joined(user)
             message.env_user(user, True).env_channel(channel).env_server(self._server)
             # await Application.EVENTS.publish('new_message', message)
             if text.startswith(trigger):
